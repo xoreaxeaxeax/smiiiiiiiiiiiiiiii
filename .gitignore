@@ -1,0 +1,26 @@
+# Build artifacts
+smiiiiiiiiiiiiiiii
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.out
+*.exe
+
+# Debug / profiling
+*.dSYM/
+*.su
+*.gcno
+*.gcda
+*.gcov
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
