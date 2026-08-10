@@ -387,20 +387,20 @@ The code waits for all cores to enter SMM, or for up to 1 second, whichever
 occurs first.  To get a core to execute SMM code while another core stays
 executing *outside* SMM, we need that outside core to stay uninterruptible for
 the *entire* second — an SMI is taken at an instruction boundary, so any gap
-between two instructions is a door the pending SMI walks through to drag the
-core in.  The delay therefore has to be a *single* instruction: one
-uninterruptible op that outlasts the one-second rendezvous.
+between two instructions lets the pending SMI pull the core into SMM.  The
+delay therefore has to be a *single* instruction: one uninterruptible op that
+outlasts the one-second rendezvous.
 
 ## Proof-of-Concept
 
 There are many ways to reach the forbidden 1-second instruction, and the exact
 approach will vary platform-to-platform.  But, roughly: find a high-latency MMIO
 address, and then convince the CPU to read from it as slowly as possible — abuse
-an undocumented region that answers reads at a crawl, then use the widest load
-the ISA will give you to haul a ridiculous pile of bytes across it in a single
-instruction, ideally while the other cores are elbowing onto the same bus so the
-whole thing wheezes through under contention.  One read, one instruction, and
-the CPU is stuck holding it for the better part of a second.
+an undocumented region that answers reads at a crawl, use the widest load the
+ISA will give you to move as many bytes as possible across it in a single
+instruction, and let the other cores contend for the same bus to slow it
+further.  One read, one instruction, and the CPU is stuck holding it for the
+better part of a second.
 
 The provided [proof-of-concept](./smiiiiiiiiiiiiiiii.c)
 is tuned for a Zen 3 Ryzen 7
@@ -448,14 +448,18 @@ if (delta)
     puts("!!! a core ran outside SMM");
 ```
 
-The counters tell the story.  If they diverge, a core kept running *outside* SMM
-while the others were pulled in — it lived through SMIs the rest of them serviced
-without it.
+If the counts diverge, it means a core kept running *outside* SMM while the
+others were pulled in — it missed the SMIs the rest of them serviced.
+
+To better illustrate this, we can run the proof-of-concept behind a needlessly
+flashy and entirely pointless GUI, tracking SMI counters on each core, to watch
+them execute in perfect lockstep until a wildly delayed core breaks their
+required synchronization:
 
 ![SMI counter divergence in action](examples/smi.gif)
 
-And that's the entire result: SMM's one promise, that nothing else runs
-while it does, falls apart in the face of one absurdly long instruction.
+SMM's one guarantee — that nothing else runs while it does — falls apart under a
+single absurdly long instruction.
 
 ## Exploitation
 
@@ -467,16 +471,13 @@ that value in between the check and use, and you're inside SMM.  But these
 issues sit *dormant* and largely unpatched in the wild, because of one
 assumption: exploitation requires something to modify the shared memory *while
 SMM executes*, and because of the SMM rendezvous no CPU cores are outside SMM to
-launch an attack.  The only way in — or so we thought — was a DMA-capable
-peripheral writing behind the CPU's back — physical access, a malicious device —
-so the whole class is written off as a hardware problem.
+launch an attack.  The only way in was a DMA-capable peripheral writing behind
+the CPU's back — physical access, a malicious device — so the whole class is
+written off as a hardware problem.
 
-SMI desynchronization removes the prerequisite: an outside core, no physical
-access or hardware required, can now run while SMM executes — and suddenly the
-dormant CVEs become exploitable from software.
-
-In this project, we've shown only that the window opens; but that window was the
-whole reason these bugs were thought safe.
+SMI desynchronization removes the prerequisite that kept the platform safe: an
+outside core, no physical access or hardware required, can now run while SMM
+executes — and the dormant CVEs become exploitable from software.
 
 ## Porting to your platform
 
