@@ -479,6 +479,18 @@ SMI desynchronization removes the prerequisite that kept the platform safe: an
 outside core, no physical access or hardware required, can now run while SMM
 executes — and the dormant CVEs become exploitable from software.
 
+## Mitigations
+
+There probably aren't any, which is what makes this one somewhat more
+interesting than traditional SMM issues.  Keep the timeout, and the rendezvous is
+easily broken.  Remove the timeout, and a legitimately stuck core hangs the
+platform on the first SMI.  Increase the timeout, and you kill performance on
+many-core platforms that are forced to quiesce all cores every SMM entry.  It's
+not clear what the best path forward is, or if there is even a path forward at
+all.
+
+Until then, the recommended workaround is to not execute any long instructions.
+
 ## Porting to your platform
 
 The default `vmovdqu` at `0xfcc68860` in the proof-of-concept is a slow spot on
