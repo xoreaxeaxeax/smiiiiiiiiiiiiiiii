@@ -534,6 +534,10 @@ sudo ./smiiiiiiiiiiiiiiii          # default: -r xmm at 0xfcc68860
 | `-a <phys-addr>` | `0xfcc68860` | Target physical address for the MMIO timing loop (hex `0x...` or decimal). |
 | `-h`, `--help` | — | Print usage and exit. |
 
+## References
+
+* [DEF CON 2026 – Weaponizing Uselessness](https://media.defcon.org/DEF%20CON%2034/DEF%20CON%2034%20presentations/DEF%20CON%2034%20presentations/DEF%20CON%2034%20-%20Christopher%20Domas%20-%20Weaponizing%20Uselessness%20Breaking%20SMM%20with%20the%20Slowest%20Instruction%20Ever%20Written%20-%202026.pdf)
+
 ## Author
 
 `smiiiiiiiiiiiiiiii` is a research effort from Christopher Domas ([@xoreaxeaxeax](https://x.com/xoreaxeaxeax)).
